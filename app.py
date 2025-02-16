@@ -2440,17 +2440,19 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for professional look
 st.markdown(
     """
     <style>
     .stApp {
-        background-color: #2c3e50;
-        color: #ffffff;
+        background-color: #1e1e2f;  /* Dark background for the entire app */
+        color: white;  /* Light text color for better readability */
+        font-family: 'Arial', sans-serif;
     }
     .stSidebar {
-        background-color: #1a1a1a;
-        color: #ffffff;
+        background-color: #2a2a40;  /* Slightly lighter dark color for the sidebar */
+        color: white;  /* Light text color for the sidebar */
+        padding: 20px;
+        border-radius: 10px;
     }
     .stButton button {
         background-color: #3498db;
@@ -2458,27 +2460,66 @@ st.markdown(
         border-radius: 5px;
         padding: 10px 20px;
         font-size: 16px;
+        transition: background-color 0.3s ease;
     }
     .stButton button:hover {
         background-color: #2980b9;
     }
     .stMarkdown h1 {
-        color: #ffffff;
+        color: white;  /* White color for h1 headings */
+        font-size: 2.5em;
+        font-weight: bold;
     }
     .stMarkdown h2 {
-        color: #3498db;
+        color: #3498db;  /* Blue color for h2 headings */
+        font-size: 2em;
+        font-weight: bold;
     }
     .stMarkdown h3 {
-        color: #2980b9;
+        color: #2980b9;  /* Darker blue color for h3 headings */
+        font-size: 1.5em;
+        font-weight: bold;
     }
     .stDataFrame {
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        background-color: #ffffff;
-        color: #2c3e50;
+        background-color: white;  /* White background for DataFrames */
+        color: black;  /* Black text for DataFrames */
     }
-    .stMarkdown p, .stMarkdown li, .stMarkdown div {
-        color: #ffffff;
+    .stDataFrame th {
+        background-color: #3498db;  /* Blue background for DataFrame headers */
+        color: white;  /* White text for DataFrame headers */
+    }
+    .stDataFrame td {
+        background-color: #f5f5f5;  /* Light gray background for DataFrame cells */
+        color: black;  /* Black text for DataFrame cells */
+    }
+    /* Custom styles for navigation elements */
+    .stSidebar .stButton button {
+        background-color: #e67e22;  /* Orange color for sidebar buttons */
+        color: white;
+    }
+    .stSidebar .stButton button:hover {
+        background-color: #d35400;  /* Darker orange on hover */
+    }
+    /* Custom styles for solution elements */
+    .stMarkdown p {
+        color: #ecf0f1;  /* Light gray color for solution text */
+        font-size: 1.1em;
+    }
+    .stMarkdown code {
+        background-color: #34495e;  /* Dark background for code blocks */
+        color: #e67e22;  /* Orange text for code blocks */
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+    /* Add animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .stApp {
+        animation: fadeIn 1s ease-in-out;
     }
     </style>
     """,
@@ -2492,7 +2533,7 @@ API_URL = "http://127.0.0.1:5000"
 @st.cache_data
 def fetch_table_data(table_name):
     try:
-        response = requests.get(f"{API_URL}/all_data/{table_name}")
+        response = requests.get(f"{API_URL}/get_data/{table_name}")
         if response.status_code == 200:
             return pd.DataFrame(response.json())
     except Exception as e:
@@ -2517,7 +2558,7 @@ page = st.sidebar.radio("Go to", ["Home", "Table Data", "Power BI Dashboard", "S
 # ✅ Home Page
 if page == "Home":
     st.title("🏦 Welcome to the Banking Dashboard!")
-    st.write("Navigate using the sidebar to explore data, Power BI reports, and SQL queries.")
+    st.write("Navigate using the sidebar to explore data, Power BI reports, SQL queries and Python solutions.")
 
     # KPIs
     st.subheader("📊 Key Performance Indicators (KPIs)")
@@ -2537,12 +2578,9 @@ if page == "Home":
         min_date = transactions["transaction_date"].min()
         max_date = transactions["transaction_date"].max()
         selected_date = st.date_input("Select Date Range", [min_date, max_date])
-        if len(selected_date) == 2:  # Ensure selected_date has two elements
-            filtered_data = transactions[(transactions["transaction_date"] >= pd.to_datetime(selected_date[0])) & 
+        filtered_data = transactions[(transactions["transaction_date"] >= pd.to_datetime(selected_date[0])) & 
                                    (transactions["transaction_date"] <= pd.to_datetime(selected_date[1]))]
-            st.write(f"📅 **Transactions between {selected_date[0]} and {selected_date[1]}:** {len(filtered_data)} records")
-        else:
-            st.warning("Please select a valid date range.")
+        st.write(f"📅 **Transactions between {selected_date[0]} and {selected_date[1]}:** {len(filtered_data)} records")
 
     # Geospatial Map using City and State
     st.subheader("📍 Branch Locations")
@@ -2573,17 +2611,16 @@ if page == "Home":
         # Drop rows where latitude or longitude is missing
         branches = branches.dropna(subset=["latitude", "longitude"])
 
-        # Create a Folium map with a smaller zoom level and better styling
-        m = folium.Map(location=[20.5937, 78.9629], zoom_start=4, tiles="CartoDB positron")  # Centered on India with a professional tile
+        # Create a Folium map
+        m = folium.Map(location=[20.5937, 78.9629], zoom_start=5)  # Centered on India
         for _, row in branches.iterrows():
             folium.Marker(
                 [row["latitude"], row["longitude"]],
-                popup=f"{row['branch_name']}, {row['city']}, {row['state']}",
-                icon=folium.Icon(color="blue", icon="info-sign")  # Add a professional icon
+                popup=f"{row['branch_name']}, {row['city']}, {row['state']}"
             ).add_to(m)
 
-        # Display the map in Streamlit with a smaller size
-        st_folium(m, width=1025, height=455)  # Adjusted width and height for better fit
+        # Display the map in Streamlit
+        st_folium(m, width=1020, height=565)
 
 # ✅ Table Data Page
 elif page == "Table Data":
@@ -2749,21 +2786,9 @@ elif page == "SQL Queries":
 elif page == "Downloads":
     st.title("📥 Download Project Files")
     st.write("📥 **Download the Project Files Below:**")
-    
-    # PDF Report
     st.markdown("[📄 Download PDF Report](sandbox:/mnt/data/dashboard%20(2).pdf)", unsafe_allow_html=True)
-    
-    # Power BI Dashboard
     st.markdown("[📊 Download Power BI Dashboard (PBIX)](sandbox:/mnt/data/banking_operation_dashboard.pbix)", unsafe_allow_html=True)
-    
-    # PowerPoint Presentation
     st.markdown("[📽️ Download PowerPoint Presentation](sandbox:/mnt/data/Analysis%20of%20Banking%20Operations%20using%20Power%20BI(1).pptx)", unsafe_allow_html=True)
-    
-    # SQL Queries File
-    st.markdown("[📝 Download SQL Queries (SQL)](https://example.com/path/to/bank1.sql)", unsafe_allow_html=True)
-    
-    # Python EDA, ML, and Hypothesis Testing Jupyter Notebook
-    st.markdown("[🐍 Download Python Analysis Notebook (IPYNB)](https://example.com/path/to/python_analysis1.ipynb)", unsafe_allow_html=True)
 
 # ✅ Python Analysis Page
 elif page == "Python Analysis":
@@ -2779,7 +2804,7 @@ elif page == "Python Analysis":
         transactions = fetch_table_data("transactions")
         accounts = fetch_table_data("accounts")
         branches = fetch_table_data("branch")
-        employee = fetch_table_data("employee")
+        employees = fetch_table_data("employees")
 
         # Step 1: Check for Missing Values
         st.write("#### 1. Handling Missing Values")
@@ -2805,8 +2830,8 @@ elif page == "Python Analysis":
         else:
             st.error("Branches table is not available or is empty.")
         
-        if employee is not None:
-            st.write("- **Employees Table:**", employee.isnull().sum().sum(), "missing values found.")
+        if employees is not None:
+            st.write("- **Employees Table:**", employees.isnull().sum().sum(), "missing values found.")
         else:
             st.error("Employees table is not available or is empty.")
         
@@ -2836,8 +2861,8 @@ elif page == "Python Analysis":
         else:
             st.error("Branches table is not available or is empty.")
         
-        if employee is not None:
-            st.write("- **Employees Table:**", employee.duplicated().sum(), "duplicates found.")
+        if employees is not None:
+            st.write("- **Employees Table:**", employees.duplicated().sum(), "duplicates found.")
         else:
             st.error("Employees table is not available or is empty.")
         
@@ -2867,7 +2892,7 @@ elif page == "Python Analysis":
         else:
             st.error("Branches table is not available or is empty.")
         
-        if employee is not None:
+        if employees is not None:
             st.write("- **Employees Table:** Verified `hire_date` is datetime.")
         else:
             st.error("Employees table is not available or is empty.")
@@ -2914,8 +2939,8 @@ elif page == "Python Analysis":
         else:
             st.error("Branches table is not available or is empty.")
         
-        if employee is not None:
-            st.write("- **Employees Table:**", employee.shape)
+        if employees is not None:
+            st.write("- **Employees Table:**", employees.shape)
         else:
             st.error("Employees table is not available or is empty.")
         

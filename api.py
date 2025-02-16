@@ -382,85 +382,6 @@ from flask_cors import CORS
 import pymysql
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS to allow Streamlit to fetch data
-
-# Home Route
-@app.route("/")
-def home():
-    return jsonify({"message": "Welcome to the Banking API!", "status": "running"})
-
-# Database connection function
-def get_db_connection():
-    return pymysql.connect(
-        host="localhost",
-        user="root",
-        password="Aryankakade@143",
-        database="bank1",
-        port=3306,
-        cursorclass=pymysql.cursors.DictCursor
-    )
-
-# API to fetch individual table data
-@app.route("/data/<table_name>", methods=["GET"])
-def get_table_data(table_name):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM {table_name} LIMIT 50")
-        data = cursor.fetchall()
-        conn.close()
-        return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-# API to fetch all tables data
-@app.route("/all_data", methods=["GET"])
-def get_all_tables_data():
-    tables = ["transactions", "customers", "accounts", "employees", "branch"]  # ✅ Correct tables
-    result = {}
-
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        for table in tables:
-            try:
-                cursor.execute(f"SELECT * FROM {table} LIMIT 50")
-                result[table] = cursor.fetchall()
-            except Exception as e:
-                result[table] = {"error": str(e)}
-
-        conn.close()
-        return jsonify(result)
-
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-# ✅ Add API for executing SQL queries
-@app.route("/execute_query", methods=["POST"])
-def execute_query():
-    try:
-        data = request.get_json()
-        query = data.get("query")
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        result = cursor.fetchall()
-        conn.close()
-
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)  # Run Flask on port 5000
-
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import pymysql
-
-app = Flask(__name__)
 CORS(app)  # Enable CORS for Streamlit integration
 
 # ✅ Database connection function
@@ -484,8 +405,8 @@ def get_db_connection():
 def home():
     return jsonify({"message": "Welcome to the Banking API!", "status": "running"})
 
-# ✅ Fetch individual table data (Fixed)
-@app.route("/all_data/<table_name>", methods=["GET"])
+# ✅ Fetch individual table data
+@app.route("/get_data/<table_name>", methods=["GET"])
 def get_table_data(table_name):
     try:
         conn = get_db_connection()
