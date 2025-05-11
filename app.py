@@ -2432,7 +2432,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.linear_model import LinearRegression
 import time
 
-# ✅ Custom Theme
+# ✅ Custom Theme with Dark/Light Mode Toggle
 st.set_page_config(
     page_title="🏦 Banking Dashboard",
     page_icon="🏦",
@@ -2440,22 +2440,32 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Custom CSS for Dark/Light Mode
 st.markdown(
     """
     <style>
+    :root {
+        --primary-color: #3498db;
+        --background-color: #1e1e2f;
+        --text-color: white;
+    }
+    [data-theme="light"] {
+        --background-color: white;
+        --text-color: black;
+    }
     .stApp {
-        background-color: #1e1e2f;  /* Dark background for the entire app */
-        color: white;  /* Light text color for better readability */
+        background-color: var(--background-color);
+        color: var(--text-color);
         font-family: 'Arial', sans-serif;
     }
     .stSidebar {
-        background-color: #2a2a40;  /* Slightly lighter dark color for the sidebar */
-        color: white;  /* Light text color for the sidebar */
+        background-color: #2a2a40;
+        color: white;
         padding: 20px;
         border-radius: 10px;
     }
     .stButton button {
-        background-color: #3498db;
+        background-color: var(--primary-color);
         color: white;
         border-radius: 5px;
         padding: 10px 20px;
@@ -2466,54 +2476,34 @@ st.markdown(
         background-color: #2980b9;
     }
     .stMarkdown h1 {
-        color: white;  /* White color for h1 headings */
+        color: var(--text-color);
         font-size: 2.5em;
         font-weight: bold;
     }
     .stMarkdown h2 {
-        color: #3498db;  /* Blue color for h2 headings */
+        color: var(--primary-color);
         font-size: 2em;
         font-weight: bold;
     }
     .stMarkdown h3 {
-        color: #2980b9;  /* Darker blue color for h3 headings */
+        color: #2980b9;
         font-size: 1.5em;
         font-weight: bold;
     }
     .stDataFrame {
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        background-color: white;  /* White background for DataFrames */
-        color: black;  /* Black text for DataFrames */
+        background-color: white;
+        color: black;
     }
     .stDataFrame th {
-        background-color: #3498db;  /* Blue background for DataFrame headers */
-        color: white;  /* White text for DataFrame headers */
-    }
-    .stDataFrame td {
-        background-color: #f5f5f5;  /* Light gray background for DataFrame cells */
-        color: black;  /* Black text for DataFrame cells */
-    }
-    /* Custom styles for navigation elements */
-    .stSidebar .stButton button {
-        background-color: #e67e22;  /* Orange color for sidebar buttons */
+        background-color: var(--primary-color);
         color: white;
     }
-    .stSidebar .stButton button:hover {
-        background-color: #d35400;  /* Darker orange on hover */
+    .stDataFrame td {
+        background-color: #f5f5f5;
+        color: black;
     }
-    /* Custom styles for solution elements */
-    .stMarkdown p {
-        color: #ecf0f1;  /* Light gray color for solution text */
-        font-size: 1.1em;
-    }
-    .stMarkdown code {
-        background-color: #34495e;  /* Dark background for code blocks */
-        color: #e67e22;  /* Orange text for code blocks */
-        padding: 2px 5px;
-        border-radius: 3px;
-    }
-    /* Add animations */
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -2525,6 +2515,12 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Dark/Light Mode Toggle
+if st.sidebar.checkbox("🌙 Dark Mode"):
+    st.markdown('<style>[data-theme="light"] { display: none; }</style>', unsafe_allow_html=True)
+else:
+    st.markdown('<style>[data-theme="dark"] { display: none; }</style>', unsafe_allow_html=True)
 
 # ✅ Define API Base URL
 API_URL = "http://127.0.0.1:5000"
@@ -2558,17 +2554,44 @@ page = st.sidebar.radio("Go to", ["Home", "Table Data", "Power BI Dashboard", "S
 # ✅ Home Page
 if page == "Home":
     st.title("🏦 Welcome to the Banking Dashboard!")
-    st.write("Navigate using the sidebar to explore data, Power BI reports, SQL queries and Python solutions.")
+    st.write("Navigate using the sidebar to explore data, Power BI reports, SQL queries, and Python solutions.")
 
-    # KPIs
+    # KPIs in Interactive Cards
     st.subheader("📊 Key Performance Indicators (KPIs)")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Total Customers", 1500, "+5%")
+        st.markdown(
+            """
+            <div style="background: linear-gradient(135deg, #3498db, #2980b9); padding: 20px; border-radius: 10px; color: white;">
+                <h3>Total Customers</h3>
+                <h1>1,500</h1>
+                <p>+5% from last month</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     with col2:
-        st.metric("Total Transactions", 50000, "+10%")
+        st.markdown(
+            """
+            <div style="background: linear-gradient(135deg, #e67e22, #d35400); padding: 20px; border-radius: 10px; color: white;">
+                <h3>Total Transactions</h3>
+                <h1>50,000</h1>
+                <p>+10% from last month</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     with col3:
-        st.metric("Total Revenue", "$1.2M", "+8%")
+        st.markdown(
+            """
+            <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); padding: 20px; border-radius: 10px; color: white;">
+                <h3>Total Revenue</h3>
+                <h1>$1.2M</h1>
+                <p>+8% from last month</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     # Interactive Filters
     st.subheader("🔍 Interactive Filters")
